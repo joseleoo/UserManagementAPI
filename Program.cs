@@ -9,20 +9,16 @@ builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// Global exception handler
-app.UseExceptionHandler(errorApp =>
-{
-    errorApp.Run(async context =>
-    {
-        context.Response.StatusCode = 500;
-        context.Response.ContentType = "application/json";
-        await context.Response.WriteAsync("{\"message\": \"An unexpected error occurred.\"}");
-    });
-});
+// Error-handling middleware FIRST
+app.UseMiddleware<UserManagementAPI.Middleware.ErrorHandlingMiddleware>();
 
-// Configure the HTTP request pipeline.
+// Authentication middleware NEXT
+app.UseMiddleware<UserManagementAPI.Middleware.TokenAuthenticationMiddleware>();
+
+// Logging middleware LAST
+app.UseMiddleware<UserManagementAPI.Middleware.RequestResponseLoggingMiddleware>();
+
 app.UseRouting();
 app.UseAuthorization();
 app.MapControllers();
-
 app.Run();
