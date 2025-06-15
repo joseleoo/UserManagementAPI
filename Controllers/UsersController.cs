@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace UserManagementAPI.Controllers
 {
@@ -7,8 +8,13 @@ namespace UserManagementAPI.Controllers
     [Route("api/[controller]")]
     public class UsersController : ControllerBase
     {
-        // This is a placeholder for your user data store.
-        private static readonly List<User> Users = new List<User>();
+        // Almacenamiento en memoria con datos iniciales
+        private static readonly List<User> Users = new List<User>
+        {
+            new User { Id = 1, Name = "Alice", Email = "alice@email.com" },
+            new User { Id = 2, Name = "Bob", Email = "bob@email.com" }
+        };
+        private static int _nextId = 3;
 
         // GET: api/users
         [HttpGet]
@@ -21,7 +27,7 @@ namespace UserManagementAPI.Controllers
         [HttpGet("{id}")]
         public ActionResult<User> GetUser(int id)
         {
-            var user = Users.Find(u => u.Id == id);
+            var user = Users.FirstOrDefault(u => u.Id == id);
             if (user == null)
                 return NotFound();
             return Ok(user);
@@ -31,7 +37,7 @@ namespace UserManagementAPI.Controllers
         [HttpPost]
         public ActionResult<User> CreateUser([FromBody] User user)
         {
-            user.Id = Users.Count + 1; // Simple ID generation for demo
+            user.Id = _nextId++;
             Users.Add(user);
             return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
         }
@@ -40,14 +46,12 @@ namespace UserManagementAPI.Controllers
         [HttpPut("{id}")]
         public IActionResult UpdateUser(int id, [FromBody] User updatedUser)
         {
-            var user = Users.Find(u => u.Id == id);
+            var user = Users.FirstOrDefault(u => u.Id == id);
             if (user == null)
                 return NotFound();
 
             user.Name = updatedUser.Name;
             user.Email = updatedUser.Email;
-            // Update other fields as needed
-
             return NoContent();
         }
 
@@ -55,7 +59,7 @@ namespace UserManagementAPI.Controllers
         [HttpDelete("{id}")]
         public IActionResult DeleteUser(int id)
         {
-            var user = Users.Find(u => u.Id == id);
+            var user = Users.FirstOrDefault(u => u.Id == id);
             if (user == null)
                 return NotFound();
 
@@ -64,7 +68,6 @@ namespace UserManagementAPI.Controllers
         }
     }
 
-    // Simple User model for demonstration
     public class User
     {
         public int Id { get; set; }
